@@ -21,6 +21,7 @@ venv/
 ENV/
 
 # IDE
+.antigravitycli/
 .idea/
 .vscode/
 *.swp
