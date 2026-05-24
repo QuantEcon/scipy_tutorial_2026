@@ -80,8 +80,11 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add notebooks/
-          git diff --staged --quiet || git commit -m "Update notebooks for Colab [skip ci]"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "Update notebooks for Colab [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
 
       - name: Upload Execution Reports
         uses: actions/upload-artifact@v4
