@@ -18,13 +18,13 @@ concurrency:
 
 jobs:
   build:
-    runs-on: "runs-on=${{ github.run_id }}/family=g4dn.2xlarge/image=quantecon_ubuntu2404/disk=large"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Setup Anaconda
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -34,32 +34,27 @@ jobs:
           python-version: "3.13"
           environment-file: environment.yml
           activate-environment: quantecon
-      
-      - name: Check nvidia Drivers
-        shell: bash -l {0}
-        run: nvidia-smi
 
-      - name: Install JAX with CUDA support
+      - name: Install JAX
         shell: bash -l {0}
         run: |
-          pip install -U "jax[cuda13]"
-          pip install numpyro
+          pip install -U jax
           python scripts/test-jax-install.py
 
       - name: Display Conda Environment Versions
         shell: bash -l {0}
         run: conda list
-      
+
       - name: Display Pip Versions
         shell: bash -l {0}
         run: pip list
-      
+
       # Build Download Notebooks first (so HTML theme detects them)
       - name: Build Download Notebooks (sphinx-tojupyter)
         shell: bash -l {0}
         run: |
           jb build lectures --path-output ./ --builder=custom --custom-builder=jupyter -n -W --keep-going
-      
+
       - name: Copy notebooks for download and Colab support
         shell: bash -l {0}
         run: |
@@ -73,13 +68,13 @@ jobs:
           cp _build/jupyter/*.ipynb notebooks/ 2>/dev/null || true
           echo "Notebooks copied to notebooks/ folder for Colab:"
           ls -la notebooks/
-      
+
       # Build HTML (after notebooks so theme can detect them)
       - name: Build HTML
         shell: bash -l {0}
         run: |
           jb build lectures --path-output ./ -n -W --keep-going
-      
+
       - name: Commit notebooks to repo
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -87,17 +82,17 @@ jobs:
           git add notebooks/
           git diff --staged --quiet || git commit -m "Update notebooks for Colab [skip ci]"
           git push
-      
+
       - name: Upload Execution Reports
         uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: execution-reports
           path: _build/html/reports
-      
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
-      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
