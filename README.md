@@ -6,7 +6,7 @@
 
 **Prepared for SciPy 2026**
 
-**Authors: [John Stachurski](https://johnstachurski.net/), [Smit Lunagariya](https://smit-create.github.io/intro.html), [Matt McKay](https://github.com/mmcky)**
+**Authors: [John Stachurski](https://johnstachurski.net/), [Thomas J. Sargent](http://www.tomsargent.com/), [Smit Lunagariya](https://smit-create.github.io/intro.html), [Matt McKay](https://github.com/mmcky)**
 
 The tutorial demonstrates how to accelerate simulations using modern Python tools.
 
