@@ -62,8 +62,8 @@ Racial distribution in Memphis, Tennessee.
 :name: dc_map
 :width: 80%
 
-Racial distribution in Washington, D.C. The 
-the eastern portions of the city and Prince George's County
+Racial distribution in Washington, D.C. The
+eastern portions of the city and Prince George's County
 are predominantly Black, while the western suburbs in Virginia and Montgomery
 County are predominantly White.
 ```
