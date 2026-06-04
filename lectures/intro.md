@@ -61,8 +61,7 @@ We study:
 1. **The basic model** — Understanding the dynamics of racial segregation using Python classes
 2. **NumPy implementation** — Rewriting the model with arrays and functions for clarity and speed
 3. **JAX implementation** — Translating the model to JAX syntax and concepts
-3. **Further parallelization** — How can we exploit modern parallel hardware (e.g., GPUs)
-3. **Extensions** — Making the model more realistic and studying outcomes
+4. **Further parallelization** — How can we exploit modern parallel hardware (e.g., GPUs)
 
 
 ```{tableofcontents}
