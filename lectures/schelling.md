@@ -188,7 +188,7 @@ def happy(agent, all_agents):
     """
     Test happiness of agent, given locations of others (all_agents).
 
-    Return true if the number of neighbors with a different type is not more
+    Return True if the number of neighbors with a different type is no more
     than max_other_type.
     """
 
@@ -211,7 +211,7 @@ def happy(agent, all_agents):
 
     # Count how many neighbors have a different type
     num_other_type = sum(agent.type != neighbor.type for neighbor in neighbors)
-    # Return true if does not exceed threshold
+    # Return True if it does not exceed threshold
     return num_other_type <= max_other_type
 
 
