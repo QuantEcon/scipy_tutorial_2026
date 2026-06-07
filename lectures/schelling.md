@@ -31,7 +31,7 @@ preference for neighbors of the same race.
 For example, these agents might be comfortable with a mixed race neighborhood
 but uncomfortable when they feel "surrounded" by people from a different race.
 
-Schelling illustrated the follow surprising result: in such a setting, mixed
+Schelling illustrated the following surprising result: in such a setting, mixed
 race neighborhoods are likely to be unstable, tending to collapse over time.
 
 In fact the model predicts strongly divided neighborhoods, with high levels of
@@ -75,7 +75,7 @@ Assume there are $n$ of each type.
 
 These agents all live on a single unit square.
 
-Thus, the location (e.g, address) of an agent is just a point $(x, y)$,  where
+Thus, the location (e.g., address) of an agent is just a point $(x, y)$, where
 $0 < x, y < 1$.
 
 * The set of all points $(x,y)$ satisfying $0 < x, y < 1$ is called the **unit square**
@@ -88,7 +88,7 @@ $0 < x, y < 1$.
 We will say that an agent is 
 
 * **happy** if $k \leq 6$ of her 10 nearest neighbors are of a different type.
-* **unhappy** if $k > 6$ her 10 nearest neighbors are of a different type.
+* **unhappy** if $k > 6$ of her 10 nearest neighbors are of a different type.
 
 For example,
 
@@ -186,9 +186,9 @@ def get_distance(agent, other_agent):
 
 def happy(agent, all_agents):
     """
-    Test happiness of agent, givel locations of others (all_agents).
+    Test happiness of agent, given locations of others (all_agents).
 
-    Return true if the number of neighbors with a different type is not more
+    Return True if the number of neighbors with a different type is no more
     than max_other_type.
     """
 
@@ -211,7 +211,7 @@ def happy(agent, all_agents):
 
     # Count how many neighbors have a different type
     num_other_type = sum(agent.type != neighbor.type for neighbor in neighbors)
-    # Return true if does not exceed theshold
+    # Return True if it does not exceed threshold
     return num_other_type <= max_other_type
 
 

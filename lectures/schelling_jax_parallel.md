@@ -27,7 +27,7 @@ JAX was slightly faster, with some small amount of parallelization achieved.
 Parallelization was limited however, because the algorithm is heavily
 sequential.
 
-In this lecture,  introduce a **parallel algorithm** that 
+In this lecture, we introduce a **parallel algorithm** that
 
 * is in some sense less elegant but
 * fully leverages JAX's ability to perform vectorized operations across all agents simultaneously.

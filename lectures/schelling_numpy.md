@@ -241,7 +241,7 @@ Here's how this works:
 
 ## Visualization
 
-Here's some code for Visualization --- we'll skip the details
+Here's some code for visualization --- we'll skip the details
 
 ```{code-cell} ipython3
 def plot_distribution(locations, types, title):
