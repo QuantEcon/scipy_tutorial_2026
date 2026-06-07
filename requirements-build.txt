@@ -1,7 +1,6 @@
 matplotlib
 numpy
 jax
-numba
 
 jupyter-book>=1.0.0,<2.0
 quantecon-book-theme

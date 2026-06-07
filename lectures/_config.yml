@@ -1,7 +1,7 @@
 title: Schelling Model Tutorial
 author: QuantEcon
 logo: _static/qe-logo.png
-description: A tutorial studying the Schelling segregation model with accelerated implementations using Numba and JAX.
+description: A tutorial studying the Schelling segregation model with accelerated implementations using JAX.
 
 parse:
   myst_enable_extensions:
@@ -61,8 +61,8 @@ sphinx:
       twitter: quantecon
       twitter_logo_url: https://assets.quantecon.org/img/qe-twitter-logo.png
       og_logo_url: https://assets.quantecon.org/img/qe-og-logo.png
-      description: A tutorial studying the Schelling segregation model with accelerated implementations using Numba and JAX.
-      keywords: Python, QuantEcon, Schelling Model, Segregation, JAX, Numba, GPU
+      description: A tutorial studying the Schelling segregation model with accelerated implementations using JAX.
+      keywords: Python, QuantEcon, Schelling Model, Segregation, NumPy, JAX, GPU
       download_nb_path: https://quantecon.github.io/scipy_tutorial_2026
       launch_buttons:
         colab_url: https://colab.research.google.com

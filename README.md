@@ -10,7 +10,7 @@
 
 The tutorial demonstrates how to accelerate simulations using modern Python tools.
 
-It focuses on Thomas Schelling's segregation model as our running example to explore acceleration tools like Numba and JAX.
+It focuses on Thomas Schelling's segregation model as our running example to explore acceleration tools like JAX.
 
 
 ## Overview
