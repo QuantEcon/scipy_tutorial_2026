@@ -22,13 +22,60 @@ The Schelling segregation model shows how mild individual preferences can lead t
 3. **JAX implementation** — Translating the model to JAX syntax and concepts
 4. **Further parallelization** — How can we exploit modern parallel hardware (e.g., GPUs)
 
-## Requirements
+## Running these lectures
 
-- Python 3.13
-- Anaconda
-- GPU support (optional, for JAX acceleration)
+### On Google Colab (no setup required)
 
-See [environment.yml](environment.yml) for the full list of dependencies.
+QuantEcon workshop hosting website provides an option to directly run
+these workshop lectures on Google Colab. If you choose to run the lectures
+on Colab, you do not need any setup. All the dependencies are pre-installed
+in the Colab. Use the following button on any of the lectures to open it in colab.
+
+![Connect to colab](lectures/_static/instructions/connect_colab.png)
+
+You can optionally run JAX lectures on a GPU or TPU to see the performance gains. You can connect to a GPU/TPU in colab in the following way:
+
+![Change Runtime](lectures/_static/instructions/change_runtime1.png)
+
+Click on available runtime
+
+![Change Runtime 2](lectures/_static/instructions/change_runtime2.png)
+
+
+### On a local machine
+
+You will need Python 3.11+ installed on your local machine.
+
+The following two options show how to setup the dependency if
+you plan to run these lectures locally.
+
+#### Option 1 (single command)
+
+```
+pip install --upgrade matplotlib numpy jax
+```
+
+#### Option 2 (If you have conda/mamba installed)
+
+1. Clone the repository:
+```
+git clone https://github.com/QuantEcon/scipy_tutorial_2026.git
+```
+
+2. Create a new environment using the `environment.yml` from this repo.
+
+```
+# Run this from root directory of this repository
+conda env create -f environment.yml
+conda activate quantecon_scipy_tutorial_2026
+```
+
+#### Verification
+
+```
+# Run a small python script from the root of the repository
+python setup_test.py
+```
 
 ## License
 

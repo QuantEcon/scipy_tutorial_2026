@@ -21,7 +21,7 @@ using NumPy arrays and functions.
 In this lecture, we explore [JAX](https://github.com/google/jax), a library
 developed by Google for high-performance numerical computing.
 
-JAX offers several powerful features, including automatic GPU/TPU acceleration and 
+JAX offers several powerful features, including automatic GPU/TPU acceleration and
 just-in-time compilation.
 
 JAX is heavily used for AI workflows but we repurpose it to work with our simulation.
@@ -47,7 +47,7 @@ Before diving into the code, let's understand what makes JAX special.
 
 In NumPy, we often modify arrays in place:
 
-```python
+```
 # NumPy style (mutable)
 locations[i, :] = new_location  # modifies the array
 ```
@@ -55,7 +55,7 @@ locations[i, :] = new_location  # modifies the array
 JAX arrays are **immutable** — they cannot be modified after creation. Instead,
 you create new arrays:
 
-```python
+```
 # JAX style (immutable)
 locations = locations.at[i, :].set(new_location)  # returns a new array
 ```
@@ -78,7 +78,7 @@ optimizations.
 NumPy's random number generator maintains hidden internal state. JAX takes a
 different approach: you explicitly manage random "keys":
 
-```python
+```
 # NumPy style
 np.random.seed(42)
 x = np.random.uniform()  # uses hidden state

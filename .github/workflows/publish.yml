@@ -33,7 +33,7 @@ jobs:
           miniconda-version: 'latest'
           python-version: "3.13"
           environment-file: environment.yml
-          activate-environment: quantecon
+          activate-environment: quantecon_scipy_tutorial_2026
 
       - name: Install JAX
         shell: bash -l {0}
