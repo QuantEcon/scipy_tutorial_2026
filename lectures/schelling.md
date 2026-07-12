@@ -380,10 +380,19 @@ after some modifications.)
 
 Modify the model so that the two groups have *different* tolerance thresholds. Type 0 (orange) agents tolerate up to 6 different-type neighbours; type 1 (green) agents tolerate only up to 3.
 
-### Solution:
 
 ```{code-cell} ipython3
+all_agents = []
+for i in range(num_of_type_0):
+    all_agents.append(Agent(0, max_other_type=6))
+for i in range(num_of_type_1):
+    all_agents.append(Agent(1, max_other_type=3))
 
+plot_distribution(all_agents, 0)
+```
+
+```{code-cell} ipython3
+run_simulation(all_agents)
 ```
 
 ## Performance

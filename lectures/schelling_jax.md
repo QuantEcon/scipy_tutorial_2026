@@ -54,7 +54,9 @@ In NumPy, we often modify arrays in place:
 
 ```
 # NumPy style (mutable)
-locations[i, :] = new_location  # modifies the array
+locations = np.eye(3)
+locations[0, :] = 2  # modifies the array
+locations
 ```
 
 JAX arrays are **immutable** — they cannot be modified after creation. Instead,
@@ -62,7 +64,10 @@ you create new arrays:
 
 ```
 # JAX style (immutable)
-locations = locations.at[i, :].set(new_location)  # returns a new array
+locations = jnp.eye(3)
+ #  locations[0, :] = 2  # this will throw an error
+locations = locations.at[0, :].set(2)  # returns a new array
+locations
 ```
 
 This might seem inefficient, but JAX’s compiler can optimize these operations,
