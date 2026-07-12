@@ -11,16 +11,7 @@ kernelspec:
   name: python3
 ---
 
-$$
-\newcommand{\argmax}{arg\,max}
-\newcommand{\argmin}{arg\,min}
-$$
-
-+++
-
 # Schelling Model with NumPy
-
-+++
 
 ## Overview
 
@@ -49,8 +40,8 @@ In the class-based version, each agent was an object storing its own type and lo
 
 Here we take a different approach: we store all agent data in NumPy arrays.
 
-- `locations` — an $ n \times 2 $ array where row $ i $ holds the $ (x, y) $ coordinates of agent $ i $  
-- `types` — an array of length $ n $ where entry $ i $ is 0 or 1, indicating agent $ i $’s type  
+- `locations` — an $ n \times 2 $ array where row $ i $ holds the $ (x, y) $ coordinates of agent $ i $
+- `types` — an array of length $ n $ where entry $ i $ is 0 or 1, indicating agent $ i $’s type
 
 
 Let’s set up the parameters:
@@ -115,10 +106,10 @@ Let’s break down how this function works:
 1. `loc - locations` subtracts the reference point `loc` from every row of
   `locations`. NumPy “broadcasts” the subtraction, so if `loc = [0.5, 0.3]`
   and `locations` has 2000 rows, the result is a 2000 × 2 array where each
-  row is the difference vector from `loc` to that agent.  
+  row is the difference vector from `loc` to that agent.
 1. `np.linalg.norm(..., axis=1)` computes the Euclidean norm of each
   row. The `axis=1` argument tells NumPy to compute the norm across columns
-  (i.e., for each row separately).  
+  (i.e., for each row separately).
 
 
 This vectorized approach is much faster than looping through agents one by one.
@@ -136,7 +127,7 @@ def get_neighbors(i, locations):
     " Get indices of the nearest neighbors to agent i (excluding self). "
     loc = locations[i, :]
     distances = get_distances(loc, locations)
-    distances[i] = np.inf                 # Don't count ourselves 
+    distances[i] = np.inf                 # Don't count ourselves
     indices = np.argsort(distances)       # Sort agents by distance
     neighbors = indices[:num_neighbors]   # Keep the closest
     return neighbors
@@ -145,14 +136,14 @@ def get_neighbors(i, locations):
 Here’s how this function works:
 
 1. First we call `get_distances` to get an array of 2000 distances (one for
-  each agent).  
+  each agent).
 1. We set `distances[i] = np.inf` so that agent $ i $ doesn’t count as their own
-  neighbor.  
+  neighbor.
 1. `np.argsort(distances)` returns the *indices* of agents sorted from closest
   to furthest. For example, if the closest agent has index
-  42, then `indices[0]` equals 42.  
+  42, then `indices[0]` equals 42.
 1. `indices[:num_neighbors]` uses slicing to keep only the first `num_neighbors`
-  indices — these correspond to the nearest neighbors.  
+  indices — these correspond to the nearest neighbors.
 
 ```{code-cell} ipython3
 :hide-output: false
@@ -181,21 +172,21 @@ def is_happy(i, locations, types):
 
 Let’s walk through this function step by step:
 
-1. `types[i]` gets the type (0 or 1) of agent $ i $.  
+1. `types[i]` gets the type (0 or 1) of agent $ i $.
 1. `get_neighbors(i, locations)` returns an array of indices for the nearest
-  neighbors.  
+  neighbors.
 1. `types[neighbors]` uses these indices to look up the types of the
   neighbors. This is called “fancy indexing” — when you pass an array of
   indices to another array, NumPy returns the elements at those positions.
   For example, if `neighbors = [42, 7, 15, ...]`, then `types[neighbors]`
-  returns `[types[42], types[7], types[15], ...]`.  
+  returns `[types[42], types[7], types[15], ...]`.
 1. `neighbor_types == agent_type` compares each neighbor’s type to the agent’s
   type, producing an array of `True`/`False` values (e.g.,
-  `[True, False, True, ...]`).  
+  `[True, False, True, ...]`).
 1. `np.sum(...)` counts how many `True` values there are. In NumPy, `True`
   is treated as 1 and `False` as 0, so summing a boolean array counts the
-  `True` entries.  
-1. Finally, we check if this count is within the tolerance `max_other_type`.  
+  `True` entries.
+1. Finally, we check if this count is within the tolerance `max_other_type`.
 
 ```{code-cell} ipython3
 :hide-output: false
@@ -249,15 +240,15 @@ def update_agent(i, locations, types, max_attempts=10_000):
 
 Here’s how this works:
 
-1. The `while` loop keeps running as long as the agent is unhappy.  
+1. The `while` loop keeps running as long as the agent is unhappy.
 1. `locations[i, :] = uniform(), uniform()` assigns a new random $ (x, y) $
   location to agent $ i $. The left side `locations[i, :]` selects row $ i $
   (all columns), and the right side creates a tuple of two random numbers
-  between 0 and 1.  
+  between 0 and 1.
 1. Importantly, this modifies the `locations` array *in place*. We don’t need
   to return anything because the original array is changed directly. This is
   a key feature of NumPy arrays — when you modify a slice, you modify the
-  underlying data.  
+  underlying data.
 
 +++
 
@@ -272,8 +263,8 @@ def plot_distribution(locations, types, title):
     " Plot the distribution of agents. "
     fig, ax = plt.subplots()
     plot_args = {
-        'markersize': 6, 'alpha': 0.8, 
-        'markeredgecolor': 'black', 
+        'markersize': 6, 'alpha': 0.8,
+        'markeredgecolor': 'black',
         'markeredgewidth': 0.5
     }
     colors = 'darkorange', 'green'

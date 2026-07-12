@@ -11,16 +11,8 @@ kernelspec:
   name: python3
 ---
 
-$$
-\newcommand{\argmax}{arg\,max}
-\newcommand{\argmin}{arg\,min}
-$$
-
-+++
-
 # Schelling Model with JAX
 
-+++
 
 ## Overview
 
@@ -60,9 +52,7 @@ Before diving into the code, let’s understand what makes JAX special.
 
 In NumPy, we often modify arrays in place:
 
-```{code-cell} ipython3
-:hide-output: false
-
+```
 # NumPy style (mutable)
 locations[i, :] = new_location  # modifies the array
 ```
@@ -70,9 +60,7 @@ locations[i, :] = new_location  # modifies the array
 JAX arrays are **immutable** — they cannot be modified after creation. Instead,
 you create new arrays:
 
-```{code-cell} ipython3
-:hide-output: false
-
+```
 # JAX style (immutable)
 locations = locations.at[i, :].set(new_location)  # returns a new array
 ```
@@ -86,8 +74,8 @@ often avoiding unnecessary copies.
 
 JAX works best with **pure functions** — functions that:
 
-1. Always return the same output for the same input  
-1. Don’t modify any external state (no side effects)  
+1. Always return the same output for the same input
+1. Don’t modify any external state (no side effects)
 
 
 This style makes code easier to reason about and enables JAX’s powerful
@@ -303,16 +291,16 @@ def update_agent(i, locations, types, key, params, max_attempts=10_000):
 
 Let’s break down the key JAX concepts here:
 
-1. **`jax.lax.while_loop`**: Takes three arguments:  
-  - `cond_fn(state)` — returns True to continue looping, False to stop  
-  - `body_fn(state)` — executes one iteration, returns new state  
-  - `(loc, key)` — initial state (a tuple containing location and random key)  
+1. **`jax.lax.while_loop`**: Takes three arguments:
+  - `cond_fn(state)` — returns True to continue looping, False to stop
+  - `body_fn(state)` — executes one iteration, returns new state
+  - `(loc, key)` — initial state (a tuple containing location and random key)
 1. **`random.split(key)`**: Since JAX random numbers are deterministic, we
   need to “split” the key to get new randomness. Each split produces two new
-  keys: one to use now, one to save for later.  
+  keys: one to use now, one to save for later.
 1. **Testing without updating**: By passing `loc` directly to `is_unhappy`, we
   can test candidate locations without modifying the `locations` array. This
-  avoids creating new arrays inside the loop, improving efficiency.  
+  avoids creating new arrays inside the loop, improving efficiency.
 
 +++
 
@@ -436,10 +424,10 @@ def run_simulation(params, max_iter=100_000, seed=1234):
 The simulation loop differs from the NumPy version in several ways:
 
 1. **Vectorized unhappiness check**: We use `get_unhappy_agents` to identify all
-  unhappy agents in parallel, then only process those agents  
-1. We pass and receive the random `key` in each call to `update_agent`  
-1. `update_agent` returns the new location, not the whole array  
-1. We only update `locations` when an agent actually moves  
+  unhappy agents in parallel, then only process those agents
+1. We pass and receive the random `key` in each call to `update_agent`
+1. `update_agent` returns the new location, not the whole array
+1. We only update `locations` when an agent actually moves
 
 
 This hybrid approach uses vectorized computation to identify unhappy agents,
@@ -537,17 +525,17 @@ count_happy_vmap_jax(locations, types, params)
 ## Tips for Using JAX
 
 1. **Think functionally**: Write pure functions that don’t modify external
-  state. This makes your code easier to JIT-compile and parallelize.  
+  state. This makes your code easier to JIT-compile and parallelize.
 1. **Use `jnp` instead of `np`**: Replace NumPy operations with their JAX
-  equivalents. Most functions have the same names.  
+  equivalents. Most functions have the same names.
 1. **Manage random keys explicitly**: Always split keys before generating
-  random numbers. Never reuse the same key.  
+  random numbers. Never reuse the same key.
 1. **Use JAX’s loop constructs**: Replace Python `for` and `while` loops with
-  `jax.lax.fori_loop` and `jax.lax.while_loop` inside JIT-compiled functions.  
+  `jax.lax.fori_loop` and `jax.lax.while_loop` inside JIT-compiled functions.
 1. **Remember immutability**: Use `.at[].set()` to “update” arrays. The
-  original array is never modified.  
+  original array is never modified.
 1. **Warm up before timing**: Always call your functions once before measuring
-  performance to exclude compilation time.  
+  performance to exclude compilation time.
 
 +++
 
@@ -557,9 +545,9 @@ While this lecture demonstrated JAX syntax and concepts, the algorithm itself
 doesn’t fully leverage JAX’s parallel capabilities. The original Schelling
 algorithm has inherent sequential dependencies:
 
-- Agents update one at a time  
-- Each agent’s move changes the state for subsequent agents  
-- The “move until happy” while loop has unpredictable length  
+- Agents update one at a time
+- Each agent’s move changes the state for subsequent agents
+- The “move until happy” while loop has unpredictable length
 
 
 These characteristics don’t map well to parallel hardware like GPUs, which
@@ -572,10 +560,10 @@ excel at performing the same operation on many data points simultaneously.
 JAX provides a powerful framework for accelerating Python code. Its key features
 are:
 
-- **Immutable arrays** that encourage functional programming  
-- **Explicit random key management** for reproducibility  
-- **JIT compilation** via the `@jit` decorator  
-- **GPU/TPU support** for hardware acceleration  
+- **Immutable arrays** that encourage functional programming
+- **Explicit random key management** for reproducibility
+- **JIT compilation** via the `@jit` decorator
+- **GPU/TPU support** for hardware acceleration
 
 
 JAX’s functional style and unique capabilities like automatic differentiation

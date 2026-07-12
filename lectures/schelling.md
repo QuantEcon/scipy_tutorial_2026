@@ -11,16 +11,7 @@ kernelspec:
   name: python3
 ---
 
-$$
-\newcommand{\argmax}{arg\,max}
-\newcommand{\argmin}{arg\,min}
-$$
-
-+++
-
 # The Schelling Model
-
-+++
 
 ## Outline
 
@@ -88,8 +79,8 @@ These agents all live on a single unit square.
 Thus, the location (e.g., address) of an agent is just a point $ (x, y) $, where
 $ 0 < x, y < 1 $.
 
-- The set of all points $ (x,y) $ satisfying $ 0 < x, y < 1 $ is called the **unit square**  
-- Below we denote the unit square by $ S $  
+- The set of all points $ (x,y) $ satisfying $ 0 < x, y < 1 $ is called the **unit square**
+- Below we denote the unit square by $ S $
 
 +++
 
@@ -97,14 +88,14 @@ $ 0 < x, y < 1 $.
 
 We will say that an agent is
 
-- **happy** if $ k \leq 6 $ of her 10 nearest neighbors are of a different type.  
-- **unhappy** if $ k > 6 $ of her 10 nearest neighbors are of a different type.  
+- **happy** if $ k \leq 6 $ of her 10 nearest neighbors are of a different type.
+- **unhappy** if $ k > 6 $ of her 10 nearest neighbors are of a different type.
 
 
 For example,
 
-- if an agent is orange and 6 of her 10 nearest neighbors are green, then she is happy.  
-- if an agent is orange and 7 of her 10 nearest neighbors are green, then she is unhappy.  
+- if an agent is orange and 6 of her 10 nearest neighbors are green, then she is happy.
+- if an agent is orange and 7 of her 10 nearest neighbors are green, then she is unhappy.
 
 
 ‘Nearest’ is in terms of [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance).
@@ -133,8 +124,8 @@ Initially, agents are mixed together (integrated).
 In particular, we assume that the initial location of each agent is an
 independent draw from a bivariate uniform distribution on the unit square $ S $.
 
-- Their $ x $ coordinate is drawn from a uniform distribution on $ (0,1) $  
-- Their $ y $ coordinate is drawn independently from the same distribution.  
+- Their $ x $ coordinate is drawn from a uniform distribution on $ (0,1) $
+- Their $ y $ coordinate is drawn independently from the same distribution.
 
 
 Now, cycling through the set of all agents, each agent is now given the chance to stay or move.
@@ -145,13 +136,13 @@ The algorithm for moving is as follows
 
 +++
 
-**Algorithm 2.1** (Relocation Algorithm)
+```{prf:algorithm} (Relocation Algorithm)
+:label: move_algo
 
-1. Draw a random location in $ S $  
-1. If happy at new location, move there  
-1. Else go to step 1  
-
-+++
+1. Draw a random location in $ S $
+1. If happy at new location, move there
+1. Else go to step 1
+```
 
 We cycle continuously through the agents, each time allowing an unhappy agent
 to move.
@@ -283,24 +274,24 @@ The main loop cycles through all agents until no one wishes to move.
 
 +++
 
-**Algorithm 2.2** (Main Simulation Loop)
+```{prf:algorithm} (Main Simulation Loop)
 
 **Input:** Set of agents with initial random locations
 
 **Output:** Final distribution of agents
 
-1. Set `count` $ \leftarrow $ 1  
-1. While `count` < `max_iter`:  
-  1. Set `number_of_moves` $ \leftarrow $ 0  
-  1. For each agent:  
-    1. Record current location  
-    1. If agent is unhappy, relocate using [Algorithm 2.1](#move_algo)  
-    1. If location changed, increment `number_of_moves`  
-  1. Plot distribution  
-  1. Increment `count`  
-  1. If `number_of_moves` = 0, exit loop  
+1. Set `count` $ \leftarrow $ 1
+1. While `count` < `max_iter`:
+  1. Set `number_of_moves` $ \leftarrow $ 0
+  1. For each agent:
+    1. Record current location
+    1. If agent is unhappy, relocate using {prf:ref}`move_algo`
+    1. If location changed, increment `number_of_moves`
+  1. Plot distribution
+  1. Increment `count`
+  1. If `number_of_moves` = 0, exit loop
 
-+++
+```
 
 The code is below
 
