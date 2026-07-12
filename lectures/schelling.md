@@ -134,9 +134,8 @@ Each agent stays if they are happy and moves if they are unhappy.
 
 The algorithm for moving is as follows
 
-+++
 
-```{prf:algorithm} (Relocation Algorithm)
+```{prf:algorithm} Relocation Algorithms
 :label: move_algo
 
 1. Draw a random location in $ S $
@@ -274,7 +273,7 @@ The main loop cycles through all agents until no one wishes to move.
 
 +++
 
-```{prf:algorithm} (Main Simulation Loop)
+```{prf:algorithm} Main Simulation Loop
 
 **Input:** Set of agents with initial random locations
 
@@ -285,7 +284,7 @@ The main loop cycles through all agents until no one wishes to move.
   1. Set `number_of_moves` $ \leftarrow $ 0
   1. For each agent:
     1. Record current location
-    1. If agent is unhappy, relocate using {prf:ref}`move_algo`
+    1. If agent is unhappy, relocate using {prf:ref}`move_algo`.
     1. If location changed, increment `number_of_moves`
   1. Plot distribution
   1. Increment `count`

@@ -85,18 +85,15 @@ optimizations.
 
 ### Random Numbers
 
-NumPy’s random number generator maintains hidden internal state. JAX takes a
-different approach: you explicitly manage random “keys”:
-
 ```{code-cell} ipython3
 :hide-output: false
 
-# NumPy style
-np.random.seed(42)
-x = np.random.uniform()  # uses hidden state
+# NumPy style (Generator API)
+rng = np.random.default_rng(42)
+x = rng.uniform()  # uses rng state
 
 # JAX style
-key = random.PRNGKey(42)       # create a key
+key = random.key(42)           # create a key
 x = random.uniform(key)        # pass key explicitly
 key, subkey = random.split(key)  # get new keys for future use
 ```
@@ -117,7 +114,7 @@ class Params(NamedTuple):
     num_of_type_0: int = 1000    # number of agents of type 0 (orange)
     num_of_type_1: int = 1000    # number of agents of type 1 (green)
     num_neighbors: int = 10      # number of agents regarded as neighbors
-    max_other_type: int = 6     # max number of different-type neighbors tolerated
+    max_other_type: int = 6      # max number of different-type neighbors tolerated
 
 
 params = Params()
@@ -370,14 +367,11 @@ def simulation_loop(locations, types, key, params, max_iter):
         Final agent locations.
     iteration : int
         Number of iterations completed.
-    key : PRNGKey
+    key : JAX random key
         Updated random key.
     """
     iteration = 0
     while iteration < max_iter:
-        print(f'Entering iteration {iteration + 1}')
-        iteration += 1
-
         # Find unhappy agents using vectorized computation
         unhappy, num_unhappy = get_unhappy_agents(locations, types, params)
 
@@ -401,7 +395,7 @@ def run_simulation(params, max_iter=100_000, seed=1234):
     """
     Run the Schelling simulation using JAX.
     """
-    key = random.PRNGKey(seed)
+    key = random.key(seed)
     key, init_key = random.split(key)
     locations, types = initialize_state(init_key, params)
 
@@ -446,7 +440,7 @@ functions:
 
 # Warm up: use actual problem size to trigger compilation
 # (JAX recompiles when array shapes change)
-key = random.PRNGKey(42)
+key = random.key(42)
 key, init_key = random.split(key)
 test_locations, test_types = initialize_state(init_key, params)
 

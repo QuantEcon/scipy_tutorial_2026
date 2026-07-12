@@ -30,7 +30,7 @@ We’ll achieve greater speed!!
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.random import uniform
+from numpy.random import default_rng
 import time
 ```
 
@@ -61,8 +61,8 @@ Here’s a function to initialize the state with random locations and types:
 ```{code-cell} ipython3
 :hide-output: false
 
-def initialize_state():
-    locations = uniform(size=(n, 2))
+def initialize_state(rng):
+    locations = rng.uniform(size=(n, 2))
     types = np.array([0] * num_of_type_0 + [1] * num_of_type_1)
     return locations, types
 ```
@@ -72,8 +72,8 @@ Let’s see what this looks like:
 ```{code-cell} ipython3
 :hide-output: false
 
-np.random.seed(1234)
-locations, types = initialize_state()
+rng = default_rng(1234)
+locations, types = initialize_state(rng)
 
 print(f"locations shape: {locations.shape}")
 print(f"First 5 locations:\n{locations[:5]}")
@@ -228,11 +228,11 @@ one where they’re happy:
 ```{code-cell} ipython3
 :hide-output: false
 
-def update_agent(i, locations, types, max_attempts=10_000):
+def update_agent(i, locations, types, rng, max_attempts=10_000):
     " Move agent i to a new location where they are happy. "
     attempts = 0
     while not is_happy(i, locations, types):
-        locations[i, :] = uniform(size=2)
+        locations[i, :] = rng.uniform(size=2)
         attempts += 1
         if attempts >= max_attempts:
             break
@@ -284,8 +284,8 @@ Let’s visualize the initial random distribution:
 ```{code-cell} ipython3
 :hide-output: false
 
-np.random.seed(1234)
-locations, types = initialize_state()
+rng = default_rng(1234)
+locations, types = initialize_state(rng)
 plot_distribution(locations, types, 'Initial random distribution')
 ```
 
@@ -305,8 +305,8 @@ def run_simulation(max_iter=100_000, seed=42):
 
     Each iteration cycles through all agents, giving each a chance to move.
     """
-    np.random.seed(seed)
-    locations, types = initialize_state()
+    rng = default_rng(seed)
+    locations, types = initialize_state(rng)
 
     plot_distribution(locations, types, 'Initial distribution')
 
@@ -320,7 +320,7 @@ def run_simulation(max_iter=100_000, seed=42):
         someone_moved = False
         for i in range(n):
             if not is_happy(i, locations, types):
-                update_agent(i, locations, types)
+                update_agent(i, locations, types, rng)
                 someone_moved = True
     elapsed = time.time() - start_time
 
@@ -373,8 +373,8 @@ def segregation_index(locations, types):
     return np.mean(same_type_fractions)
 
 
-np.random.seed(1234)
-locations, types = initialize_state()
+rng = default_rng(1234)
+locations, types = initialize_state(rng)
 
 idx_before = segregation_index(locations, types)
 print(f"Segregation index before simulation: {idx_before:.3f}")
