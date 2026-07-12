@@ -4,16 +4,23 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.1
+    jupytext_version: 1.15.2
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
 
+$$
+\newcommand{\argmax}{arg\,max}
+\newcommand{\argmin}{arg\,min}
+$$
+
++++
 
 # The Schelling Model
 
++++
 
 ## Outline
 
@@ -22,14 +29,14 @@ segregation ([Schelling, 1969](https://en.wikipedia.org/wiki/Schelling%27s_model
 
 His model studies the dynamics of racially mixed neighborhoods.
 
-Like much of Schelling's work, the model shows how local interactions can lead
+Like much of Schelling’s work, the model shows how local interactions can lead
 to surprising aggregate outcomes.
 
 It studies a setting where agents (think of households) have relatively mild
 preference for neighbors of the same race.
 
 For example, these agents might be comfortable with a mixed race neighborhood
-but uncomfortable when they feel "surrounded" by people from a different race.
+but uncomfortable when they feel “surrounded” by people from a different race.
 
 Schelling illustrated the following surprising result: in such a setting, mixed
 race neighborhoods are likely to be unstable, tending to collapse over time.
@@ -37,7 +44,7 @@ race neighborhoods are likely to be unstable, tending to collapse over time.
 In fact the model predicts strongly divided neighborhoods, with high levels of
 segregation.
 
-In other words, extreme segregation outcomes arise even though people's
+In other words, extreme segregation outcomes arise even though people’s
 preferences are not particularly extreme.
 
 These extreme outcomes happen because of *interactions* between agents in the
@@ -49,10 +56,11 @@ These ideas will become clearer as the lecture unfolds.
 In recognition of his work on segregation and other research, Schelling was
 awarded the 2005 Nobel Prize in Economic Sciences.
 
-
-Let's start with some imports:
+Let’s start with some imports:
 
 ```{code-cell} ipython3
+:hide-output: false
+
 import matplotlib.pyplot as plt
 from random import uniform, seed
 from math import sqrt
@@ -61,49 +69,55 @@ import time
 
 ## The model
 
-In this section we will build a version of Schelling's model.
+In this section we will build a version of Schelling’s model.
+
++++
 
 ### Set-Up
 
-We will cover a variation of Schelling's model that is different from the
+We will cover a variation of Schelling’s model that is different from the
 original but also easy to program and, at the same time, captures his main
 idea.
 
 Suppose we have two types of people: orange people and green people.
 
-Assume there are $n$ of each type.
+Assume there are $ n $ of each type.
 
 These agents all live on a single unit square.
 
-Thus, the location (e.g., address) of an agent is just a point $(x, y)$, where
-$0 < x, y < 1$.
+Thus, the location (e.g., address) of an agent is just a point $ (x, y) $, where
+$ 0 < x, y < 1 $.
 
-* The set of all points $(x,y)$ satisfying $0 < x, y < 1$ is called the **unit square**
-* Below we denote the unit square by $S$
+- The set of all points $ (x,y) $ satisfying $ 0 < x, y < 1 $ is called the **unit square**  
+- Below we denote the unit square by $ S $  
 
 +++
 
 ### Preferences
 
-We will say that an agent is 
+We will say that an agent is
 
-* **happy** if $k \leq 6$ of her 10 nearest neighbors are of a different type.
-* **unhappy** if $k > 6$ of her 10 nearest neighbors are of a different type.
+- **happy** if $ k \leq 6 $ of her 10 nearest neighbors are of a different type.  
+- **unhappy** if $ k > 6 $ of her 10 nearest neighbors are of a different type.  
+
 
 For example,
 
-*  if an agent is orange and 6 of her 10 nearest neighbors are green, then she is happy.
-*  if an agent is orange and 7 of her 10 nearest neighbors are green, then she is unhappy.
+- if an agent is orange and 6 of her 10 nearest neighbors are green, then she is happy.  
+- if an agent is orange and 7 of her 10 nearest neighbors are green, then she is unhappy.  
 
-'Nearest' is in terms of [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance).
+
+‘Nearest’ is in terms of [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance).
 
 An important point to note is that agents are **not** averse to living in mixed areas.
 
 They are perfectly happy if 60% of their neighbors are of the other color.
 
-Let's set up the parameters for our simulation:
+Let’s set up the parameters for our simulation:
 
 ```{code-cell} ipython3
+:hide-output: false
+
 seed(1234)              # set seed for reproducibility
 
 num_of_type_0 = 1000    # number of agents of type 0 (orange)
@@ -112,17 +126,16 @@ num_neighbors = 10      # number of agents viewed as neighbors
 max_other_type = 6      # max number of different-type neighbors tolerated
 ```
 
-+++
-
 ### Behavior
 
 Initially, agents are mixed together (integrated).
 
 In particular, we assume that the initial location of each agent is an
-independent draw from a bivariate uniform distribution on the unit square $S$.
+independent draw from a bivariate uniform distribution on the unit square $ S $.
 
-* Their $x$ coordinate is drawn from a uniform distribution on $(0,1)$
-* Their $y$ coordinate is drawn independently from the same distribution.
+- Their $ x $ coordinate is drawn from a uniform distribution on $ (0,1) $  
+- Their $ y $ coordinate is drawn independently from the same distribution.  
+
 
 Now, cycling through the set of all agents, each agent is now given the chance to stay or move.
 
@@ -130,14 +143,15 @@ Each agent stays if they are happy and moves if they are unhappy.
 
 The algorithm for moving is as follows
 
-```{prf:algorithm} Relocation Algorithm
-:label: move_algo
++++
 
-1. Draw a random location in $S$
-2. If happy at new location, move there
-3. Else go to step 1
+**Algorithm 2.1** (Relocation Algorithm)
 
-```
+1. Draw a random location in $ S $  
+1. If happy at new location, move there  
+1. Else go to step 1  
+
++++
 
 We cycle continuously through the agents, each time allowing an unhappy agent
 to move.
@@ -148,30 +162,37 @@ We continue to cycle until no one wishes to move.
 
 ## Main Loop
 
-Let's write the code to run this simulation.
+Let’s write the code to run this simulation.
 
 In what follows, agents are modeled as [objects](https://python-programming.quantecon.org/python_oop.html) that store
 
++++ {"hide-output": false}
 
-```{code-block} none
+```text
     * type (green or orange)
     * location
 ```
 
-Here's a class that we can use to instantiate agents from:
++++
+
+Here’s a class that we can use to instantiate agents from:
 
 ```{code-cell} ipython3
+:hide-output: false
+
 class Agent:
 
-    def __init__(self, type):
+    def __init__(self, type, max_other_type=6):
         self.type = type
         self.location = uniform(0, 1), uniform(0, 1)
+        self.max_other_type = max_other_type
 ```
 
-
-Here's a collection of functions that act on agents:
+Here’s a collection of functions that act on agents:
 
 ```{code-cell} ipython3
+:hide-output: false
+
 def move_agent(agent):
     "Provide agent with a new location."
     agent.location = uniform(0, 1), uniform(0, 1)
@@ -212,7 +233,7 @@ def happy(agent, all_agents):
     # Count how many neighbors have a different type
     num_other_type = sum(agent.type != neighbor.type for neighbor in neighbors)
     # Return True if it does not exceed threshold
-    return num_other_type <= max_other_type
+    return num_other_type <= agent.max_other_type
 
 
 def relocate(agent, all_agents):
@@ -221,13 +242,15 @@ def relocate(agent, all_agents):
         move_agent(agent)
 ```
 
-Here's some code that takes a list of agents and produces a plot showing their
+Here’s some code that takes a list of agents and produces a plot showing their
 locations on the unit square.
 
 Orange agents are represented by orange dots and green ones are represented by
 green dots.
 
 ```{code-cell} ipython3
+:hide-output: false
+
 def plot_distribution(agents, round_num):
     "Plot the distribution of agents after round_num rounds of the loop."
     x_values_0, y_values_0 = [], []
@@ -258,29 +281,32 @@ def plot_distribution(agents, round_num):
 
 The main loop cycles through all agents until no one wishes to move.
 
-```{prf:algorithm} Main Simulation Loop
-:label: main_loop_algo
++++
+
+**Algorithm 2.2** (Main Simulation Loop)
 
 **Input:** Set of agents with initial random locations
 
 **Output:** Final distribution of agents
 
-1. Set `count` $\leftarrow$ 1
-2. While `count` < `max_iter`:
-    1. Set `number_of_moves` $\leftarrow$ 0
-    2. For each agent:
-        1. Record current location
-        2. If agent is unhappy, relocate using {prf:ref}`move_algo`
-        3. If location changed, increment `number_of_moves`
-    3. Plot distribution
-    4. Increment `count`
-    5. If `number_of_moves` = 0, exit loop
+1. Set `count` $ \leftarrow $ 1  
+1. While `count` < `max_iter`:  
+  1. Set `number_of_moves` $ \leftarrow $ 0  
+  1. For each agent:  
+    1. Record current location  
+    1. If agent is unhappy, relocate using [Algorithm 2.1](#move_algo)  
+    1. If location changed, increment `number_of_moves`  
+  1. Plot distribution  
+  1. Increment `count`  
+  1. If `number_of_moves` = 0, exit loop  
 
-```
++++
 
 The code is below
 
 ```{code-cell} ipython3
+:hide-output: false
+
 def run_simulation(all_agents, max_iter=100_000):
 
     # Initialize a counter
@@ -310,9 +336,7 @@ def run_simulation(all_agents, max_iter=100_000):
         print(f'Converged in {elapsed:.2f} seconds after {count} iterations.')
     else:
         print('Hit iteration bound and terminated.')
-
 ```
-
 
 ## Results
 
@@ -321,6 +345,8 @@ We are now ready to run our simulation.
 First we build a population of agents:
 
 ```{code-cell} ipython3
+:hide-output: false
+
 all_agents = []
 for i in range(num_of_type_0):
     all_agents.append(Agent(0))
@@ -333,6 +359,8 @@ plot_distribution(all_agents, 0)
 Now we run the simulation and look at the results.
 
 ```{code-cell} ipython3
+:hide-output: false
+
 run_simulation(all_agents)
 ```
 
@@ -348,14 +376,25 @@ We notice that the fully mixed environment rapidly breaks down.
 
 We get emergence of at least some segregation.
 
-This is despite the fact that people in the model don't actually mind living
+This is despite the fact that people in the model don’t actually mind living
 mixed with the other type.
 
 Even with these preferences, the outcome is some degree of segregation.
 
-(Not a lot of segregation, but we'll see more segregation in later lectures,
+(Not a lot of segregation, but we’ll see more segregation in later lectures,
 after some modifications.)
 
++++
+
+## Exercise
+
+Modify the model so that the two groups have *different* tolerance thresholds. Type 0 (orange) agents tolerate up to 6 different-type neighbours; type 1 (green) agents tolerate only up to 3.
+
+### Solution:
+
+```{code-cell} ipython3
+
+```
 
 ## Performance
 
@@ -363,8 +402,12 @@ Our Python code was written for readability, not speed.
 
 This is fine for very small simulations but not for bigger ones.
 
-That's a problem for us because we want to experiment with some more ideas.
+That’s a problem for us because we want to experiment with some more ideas.
 
-In the following lectures we'll look at strategies for making our code faster.
+In the following lectures we’ll look at strategies for making our code faster.
 
-Then we'll investigate variations that might lead to even more segregation.
+Then we’ll investigate variations that might lead to even more segregation.
+
+```{code-cell} ipython3
+
+```
