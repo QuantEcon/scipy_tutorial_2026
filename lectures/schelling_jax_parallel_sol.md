@@ -349,15 +349,42 @@ to select results at the end, we align with how the hardware actually executes
 the code.
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 @partial(jit, static_argnames=('params',))
 def update_agent_location(i, locations, types, key, params):
     """
     Propose num_candidates random locations for agent i.
     Return the first happy candidate if agent is unhappy, otherwise current location.
     """
-    pass
+    num_candidates = params.num_candidates
+    current_loc = locations[i, :]
+    agent_type = types[i]
+
+    # Generate num_candidates random locations
+    keys = random.split(key, num_candidates)
+    candidates = vmap(lambda k: random.uniform(k, shape=(2,)))(keys)
+
+    # Check happiness at each candidate location (in parallel)
+    def check_candidate(loc):
+        return ~jax_is_unhappy(loc, agent_type, i, locations, types, params)
+    happy_at_candidates = vmap(check_candidate)(candidates)
+
+    # Find first happy candidate (if any)
+    first_happy_idx = jnp.argmax(happy_at_candidates)
+    any_happy = jnp.any(happy_at_candidates)
+
+    # Check if agent is already happy at current location
+    is_happy = ~jax_is_unhappy(current_loc, agent_type, i, locations, types, params)
+
+    # Move only if unhappy and found a happy candidate; otherwise stay put
+    new_loc = jnp.where(is_happy,
+                current_loc,                      # Happy agents branch
+                jnp.where(                        # Unhappy agents branch
+                    any_happy,                    # If there is a good candidate
+                    candidates[first_happy_idx],  # Move to it
+                    current_loc                   # Otherwise stay still
+                )
+              )
+    return new_loc
 
 
 @partial(jit, static_argnames=('params',))
@@ -368,14 +395,24 @@ def parallel_update_step(locations, types, key, params):
     2. For each agent, find a happy candidate location (in parallel)
        (happy agents stay put, unhappy agents search for new locations)
     """
-    pass
+    n = params.num_of_type_0 + params.num_of_type_1
+
+    # Generate keys for all agents
+    keys = random.split(key, n + 1)
+    key = keys[0]
+    agent_keys = keys[1:]
+
+    # For each agent, find a happy candidate location (in parallel)
+    def update_one_agent(i):
+        return update_agent_location(i, locations, types, agent_keys[i], params)
+    new_locations = vmap(update_one_agent)(jnp.arange(n))
+
+    return new_locations, key
 ```
 
 ### Parallel Simulation Loop
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 def parallel_simulation_loop(locations, types, key, params, max_iter):
     iteration = 0
     while iteration < max_iter:
@@ -418,8 +455,6 @@ def run_parallel_simulation(params, max_iter=100_000, seed=42):
 Before timing, we compile all JAX functions:
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 key = random.key(0)
 key, init_key = random.split(key)
 test_locations, test_types = jax_initialize_state(init_key, params)
@@ -448,8 +483,6 @@ Now let's run all three implementations and compare their performance.
 ### NumPy
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 print("=" * 50)
 print("NUMPY")
 print("=" * 50)
@@ -459,8 +492,6 @@ locations_np, types_np = run_numpy_simulation(params)
 ### JAX Sequential
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 print("=" * 50)
 print("JAX SEQUENTIAL")
 print("=" * 50)
@@ -470,8 +501,6 @@ locations_jax, types_jax = run_jax_simulation(params)
 ### JAX Parallel
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 print("=" * 50)
 print("JAX PARALLEL")
 print("=" * 50)

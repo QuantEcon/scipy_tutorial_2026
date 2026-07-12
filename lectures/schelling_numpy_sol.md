@@ -60,17 +60,17 @@ Here’s a function to initialize the state with random locations and types:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def initialize_state(rng):
-    pass
+    locations = rng.uniform(size=(n, 2))
+    types = np.array([0] * num_of_type_0 + [1] * num_of_type_1)
+    return locations, types
 ```
 
 Let’s see what this looks like:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 rng = default_rng(1234)
 locations, types = initialize_state(rng)
@@ -92,13 +92,13 @@ To find an agent’s neighbors, we need to compute distances.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def get_distances(loc, locations):
     """
     Compute the Euclidean distance from one location to all agent locations.
+
     """
-    pass
+    return np.linalg.norm(loc - locations, axis=1)
 ```
 
 Let’s break down how this function works:
@@ -122,13 +122,15 @@ Now we can find the nearest neighbors:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def get_neighbors(i, locations):
-    """
-    Get indices of the nearest neighbors to agent i (excluding self).
-    """
-    pass
+    " Get indices of the nearest neighbors to agent i (excluding self). "
+    loc = locations[i, :]
+    distances = get_distances(loc, locations)
+    distances[i] = np.inf                 # Don't count ourselves
+    indices = np.argsort(distances)       # Sort agents by distance
+    neighbors = indices[:num_neighbors]   # Keep the closest
+    return neighbors
 ```
 
 Here’s how this function works:
@@ -145,7 +147,6 @@ Here’s how this function works:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 # Find neighbors of agent 0
 neighbors = get_neighbors(0, locations)
@@ -159,13 +160,14 @@ An agent is happy if enough of their neighbors share their type:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def is_happy(i, locations, types):
-    """
-    True if agent i has no more than max_other_type neighbors of a different type.
-    """
-    pass
+    " True if agent i has no more than max_other_type neighbors of a different type. "
+    agent_type = types[i]
+    neighbors = get_neighbors(i, locations)
+    neighbor_types = types[neighbors]
+    num_other = np.sum(neighbor_types != agent_type)
+    return num_other <= max_other_type
 ```
 
 Let’s walk through this function step by step:
@@ -188,7 +190,6 @@ Let’s walk through this function step by step:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 # Check if agent 0 is happy
 print(f"Agent 0 type: {types[0]}")
@@ -201,13 +202,13 @@ The next function uses a loop to check each agent and count how many are happy.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def count_happy(locations, types):
-    """
-    Count the number of happy agents.
-    """
-    pass
+    " Count the number of happy agents. "
+    happy_count = 0
+    for i in range(n):
+        happy_count += is_happy(i, locations, types)
+    return happy_count
 ```
 
 Since `is_happy` returns `True` or `False`, and Python treats `True`
@@ -215,7 +216,6 @@ as 1 when adding, we can accumulate the count directly.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 print(f"Initially happy agents: {count_happy(locations, types)} out of {n}")
 ```
@@ -227,13 +227,15 @@ one where they’re happy:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def update_agent(i, locations, types, rng, max_attempts=10_000):
-    """
-    Move agent i to a new location where they are happy.
-    """
-    pass
+    " Move agent i to a new location where they are happy. "
+    attempts = 0
+    while not is_happy(i, locations, types):
+        locations[i, :] = rng.uniform(size=2)
+        attempts += 1
+        if attempts >= max_attempts:
+            break
 ```
 
 Here’s how this works:
@@ -256,7 +258,6 @@ Here’s some code for visualization — we’ll skip the details
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def plot_distribution(locations, types, title):
     " Plot the distribution of agents. "
@@ -282,7 +283,6 @@ Let’s visualize the initial random distribution:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 rng = default_rng(1234)
 locations, types = initialize_state(rng)
@@ -298,11 +298,11 @@ giving each the opportunity to move:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def run_simulation(max_iter=100_000, seed=42):
     """
     Run the Schelling simulation.
+
     Each iteration cycles through all agents, giving each a chance to move.
     """
     rng = default_rng(seed)
@@ -310,7 +310,28 @@ def run_simulation(max_iter=100_000, seed=42):
 
     plot_distribution(locations, types, 'Initial distribution')
 
-    pass
+    # Loop until no agent wishes to move
+    start_time = time.time()
+    someone_moved = True
+    iteration = 0
+    while someone_moved and iteration < max_iter:
+        print(f'Entering iteration {iteration + 1}')
+        iteration += 1
+        someone_moved = False
+        for i in range(n):
+            if not is_happy(i, locations, types):
+                update_agent(i, locations, types, rng)
+                someone_moved = True
+    elapsed = time.time() - start_time
+
+    plot_distribution(locations, types, f'Iteration {iteration}')
+
+    if not someone_moved:
+        print(f'Converged in {elapsed:.2f} seconds after {iteration} iterations.')
+    else:
+        print('Hit iteration bound and terminated.')
+
+    return locations, types
 ```
 
 ## Results
@@ -319,7 +340,6 @@ Let’s run the simulation:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 locations, types = run_simulation()
 ```
@@ -336,8 +356,6 @@ Implement a quantitative measure of segregation. The **exposure index** measures
 Write `segregation_index(locations, types)` that returns a float between 0 and 1, where 1 means all agents' nearest neighbours are the same type (full segregation) and 0.5 means fully mixed. Run it on the initial random distribution and again after the simulation and compare the values.
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 def segregation_index(locations, types):
     """
     Compute the mean same-type neighbor fraction across all agents.
@@ -346,7 +364,13 @@ def segregation_index(locations, types):
       ~0.5  →  fully mixed (each agent has ~50% same-type neighbors)
       ~1.0  →  fully segregated (all neighbors same type)
     """
-    pass
+    same_type_fractions = []
+    for i in range(n):
+        neighbors = get_neighbors(i, locations)
+        neighbor_types = types[neighbors]
+        same_type_count = np.sum(neighbor_types == types[i])
+        same_type_fractions.append(same_type_count / num_neighbors)
+    return np.mean(same_type_fractions)
 
 
 rng = default_rng(1234)

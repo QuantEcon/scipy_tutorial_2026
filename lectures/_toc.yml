@@ -9,3 +9,10 @@ parts:
   - file: schelling_numpy
   - file: schelling_jax
   - file: schelling_jax_parallel
+- caption: Complete solutions
+  numbered: true
+  chapters:
+  - file: schelling_sol
+  - file: schelling_numpy_sol
+  - file: schelling_jax_sol
+  - file: schelling_jax_parallel_sol

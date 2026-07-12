@@ -39,7 +39,7 @@ It shows how mild individual preferences can lead to extreme aggregate outcomes.
 
 The Schelling model is a classic example of the value of simulation.
 
-Simulations for the model were first performed using a checker board and a dice.
+Simulations for the model were first performed using a checker board and a die.
 
 Now of course we do them on computers.
 

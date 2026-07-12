@@ -136,7 +136,7 @@ The algorithm for moving is as follows
 
 
 ```{prf:algorithm} Relocation Algorithms
-:label: move_algo
+:label: move_algo_sol
 
 1. Draw a random location in $ S $
 1. If happy at new location, move there
@@ -169,30 +169,30 @@ Here’s a class that we can use to instantiate agents from:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 class Agent:
 
     def __init__(self, type, max_other_type=6):
-        pass
+        self.type = type
+        self.location = uniform(0, 1), uniform(0, 1)
+        self.max_other_type = max_other_type
 ```
 
 Here’s a collection of functions that act on agents:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def move_agent(agent):
-    """Provide agent with a new location."""
-    pass
+    "Provide agent with a new location."
+    agent.location = uniform(0, 1), uniform(0, 1)
 
 
 def get_distance(agent, other_agent):
-    """
-    Computes the Euclidean distance between self and other agent.
-    """
-    pass
+    "Computes the Euclidean distance between self and other agent."
+    a = agent.location[0] - other_agent.location[0]
+    b = agent.location[1] - other_agent.location[1]
+    return sqrt(a**2 + b**2)
 
 
 def happy(agent, all_agents):
@@ -202,12 +202,34 @@ def happy(agent, all_agents):
     Return True if the number of neighbors with a different type is no more
     than max_other_type.
     """
-    pass
+
+    # Set up a list of pairs (distance, other_agent) that records the
+    # distance from agent to all other agents.
+    distances = []
+
+    # Populate the list
+    for some_agent in all_agents:
+        if some_agent != agent:
+            distance = get_distance(some_agent, agent)
+            distances.append((distance, some_agent))
+
+    # Sort from smallest to largest, according to distance
+    distances.sort()
+
+    # Extract the list of neighboring agents
+    neighbor_pairs = distances[:num_neighbors]
+    neighbors = [neighbor for d, neighbor in neighbor_pairs]
+
+    # Count how many neighbors have a different type
+    num_other_type = sum(agent.type != neighbor.type for neighbor in neighbors)
+    # Return True if it does not exceed threshold
+    return num_other_type <= agent.max_other_type
 
 
 def relocate(agent, all_agents):
-    """If not happy, then randomly choose new locations until happy."""
-    pass
+    "If not happy, then randomly choose new locations until happy."
+    while not happy(agent, all_agents):
+        move_agent(agent)
 ```
 
 Here’s some code that takes a list of agents and produces a plot showing their
@@ -218,7 +240,6 @@ green dots.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def plot_distribution(agents, round_num):
     "Plot the distribution of agents after round_num rounds of the loop."
@@ -263,7 +284,7 @@ The main loop cycles through all agents until no one wishes to move.
   1. Set `number_of_moves` $ \leftarrow $ 0
   1. For each agent:
     1. Record current location
-    1. If agent is unhappy, relocate using {prf:ref}`move_algo`.
+    1. If agent is unhappy, relocate using {prf:ref}`move_algo_sol`.
     1. If location changed, increment `number_of_moves`
   1. Plot distribution
   1. Increment `count`
@@ -275,10 +296,36 @@ The code is below
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def run_simulation(all_agents, max_iter=100_000):
-    pass
+
+    # Initialize a counter
+    count = 1
+
+    # Loop until no agent wishes to move
+    start_time = time.time()
+    while count < max_iter:
+        number_of_moves = 0
+        # Offer each agent the chance to relocate
+        for agent in all_agents:
+            old_location = agent.location
+            # Relocate unhappy agents (happy ones won't move)
+            relocate(agent, all_agents)
+            if agent.location != old_location:
+                number_of_moves += 1
+        # Plot the distribution after this round
+        plot_distribution(all_agents, count)
+        # Print outcome and stop loop if no one moved
+        print(f'Completed loop {count} with {number_of_moves} moves')
+        count += 1
+        if number_of_moves == 0:
+            break
+    elapsed = time.time() - start_time
+
+    if count < max_iter:
+        print(f'Converged in {elapsed:.2f} seconds after {count} iterations.')
+    else:
+        print('Hit iteration bound and terminated.')
 ```
 
 ## Results
@@ -289,7 +336,6 @@ First we build a population of agents:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 all_agents = []
 for i in range(num_of_type_0):
@@ -304,8 +350,6 @@ Now we run the simulation and look at the results.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
-
 
 run_simulation(all_agents)
 ```
@@ -338,10 +382,17 @@ Modify the model so that the two groups have *different* tolerance thresholds. T
 
 
 ```{code-cell} ipython3
+all_agents = []
+for i in range(num_of_type_0):
+    all_agents.append(Agent(0, max_other_type=6))
+for i in range(num_of_type_1):
+    all_agents.append(Agent(1, max_other_type=3))
 
+plot_distribution(all_agents, 0)
 ```
 
 ```{code-cell} ipython3
+run_simulation(all_agents)
 ```
 
 ## Performance

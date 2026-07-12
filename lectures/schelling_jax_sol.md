@@ -132,14 +132,17 @@ Here’s our initialization function. Note that we use `jax.random` instead of
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def initialize_state(key, params):
     """
     Initialize agent locations and types.
 
     """
-    pass
+    num_of_type_0, num_of_type_1 = params.num_of_type_0, params.num_of_type_1
+    n = num_of_type_0 + num_of_type_1
+    locations = random.uniform(key, shape=(n, 2))
+    types = jnp.array([0] * num_of_type_0 + [1] * num_of_type_1)
+    return locations, types
 ```
 
 The key differences from NumPy are that we pass a `key` argument to
@@ -159,14 +162,14 @@ to compile functions for faster execution.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 @jit
 def get_distances(loc, locations):
     """
     Compute squared Euclidean distance from one location to all agent locations.
+
     """
-    pass
+    return jnp.linalg.norm(loc - locations, axis=1)
 ```
 
 Notice that we use vectorized operations like in NumPy. JAX compiles these
@@ -176,12 +179,12 @@ We use `jnp` (JAX NumPy) instead of `np` (NumPy). The functions are similar,
 but `jnp` operations return JAX arrays and can be compiled by JAX’s JIT
 compiler.
 
++++
 
 ### Finding Neighbors
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 @partial(jit, static_argnames=('params',))
 def get_neighbors(loc, agent_idx, locations, params):
@@ -199,7 +202,13 @@ def get_neighbors(loc, agent_idx, locations, params):
     params : Params
         Model parameters.
     """
-    pass
+    num_neighbors = params.num_neighbors
+    distances = get_distances(loc, locations)
+    # Set self-distance to infinity so agent doesn't count as own neighbor
+    distances = distances.at[agent_idx].set(jnp.inf)
+    # Use top_k on negated distances to find num_neighbors smallest in O(n) instead of O(n log n)
+    _, indices = jax.lax.top_k(-distances, num_neighbors)
+    return indices
 ```
 
 Note that we use `distances.at[i].set(jnp.inf)` instead of `distances[i] = jnp.inf`
@@ -212,7 +221,6 @@ index `i` set to infinity.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 @partial(jit, static_argnames=('params',))
 def is_unhappy(loc, agent_type, agent_idx, locations, types, params):
@@ -234,7 +242,11 @@ def is_unhappy(loc, agent_type, agent_idx, locations, types, params):
     params : Params
         Model parameters.
     """
-    pass
+    max_other_type = params.max_other_type
+    neighbors = get_neighbors(loc, agent_idx, locations, params)
+    neighbor_types = types[neighbors]
+    num_other = jnp.sum(neighbor_types != agent_type)
+    return num_other > max_other_type
 ```
 
 This function takes the location and type as explicit arguments, rather than
@@ -252,7 +264,6 @@ directly and returns only the final location.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 @partial(jit, static_argnames=('params',))
 def update_agent(i, locations, types, key, params, max_attempts=10_000):
@@ -262,7 +273,22 @@ def update_agent(i, locations, types, key, params, max_attempts=10_000):
     Returns the new location and updated random key. The calling code
     is responsible for updating the locations array if the agent moved.
     """
-    pass
+    loc = locations[i, :]
+    agent_type = types[i]
+
+    def cond_fn(state):
+        loc, key, attempts = state
+        return (attempts < max_attempts) & is_unhappy(loc, agent_type, i,
+                                                      locations, types, params)
+
+    def body_fn(state):
+        _, key, attempts = state
+        key, subkey = random.split(key)
+        new_loc = random.uniform(subkey, shape=(2,))
+        return new_loc, key, attempts + 1
+
+    final_loc, key, _ = jax.lax.while_loop(cond_fn, body_fn, (loc, key, 0))
+    return final_loc, key
 ```
 
 Let’s break down the key JAX concepts here:
@@ -287,7 +313,6 @@ JAX arrays to NumPy arrays using `np.asarray()`:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def plot_distribution(locations, types, title):
     """
@@ -318,14 +343,23 @@ makes it easier to optimize or JIT-compile the loop independently.
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 @partial(jit, static_argnames=('params',))
 def get_unhappy_agents(locations, types, params):
     """
     Find indices and count of all unhappy agents using vectorized computation.
     """
-    pass
+    n = params.num_of_type_0 + params.num_of_type_1
+
+    def check_agent(i):
+        return is_unhappy(locations[i], types[i], i, locations, types, params)
+
+    all_unhappy = vmap(check_agent)(jnp.arange(n))
+    # jnp.where with size= returns fixed-length array (required for JIT)
+    # Pads with fill_value=-1 when fewer than n agents are unhappy
+    indices = jnp.where(all_unhappy, size=n, fill_value=-1)[0]
+    count = jnp.sum(all_unhappy)  # number of valid indices
+    return indices, count
 
 
 def simulation_loop(locations, types, key, params, max_iter):
@@ -351,14 +385,16 @@ def simulation_loop(locations, types, key, params, max_iter):
             break
 
         # Update only the unhappy agents
-        pass
+        for j in range(int(num_unhappy)):
+            i = int(unhappy[j])
+            new_loc, key = update_agent(i, locations, types, key, params)
+            locations = locations.at[i, :].set(new_loc)
 
     return locations, iteration, key
 ```
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 def run_simulation(params, max_iter=100_000, seed=1234):
     """
@@ -406,7 +442,6 @@ functions:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 # Warm up: use actual problem size to trigger compilation
 # (JAX recompiles when array shapes change)
@@ -431,7 +466,6 @@ Now let’s run the simulation:
 
 ```{code-cell} ipython3
 :hide-output: false
-:tags: [skip-execution]
 
 locations, types = run_simulation(params)
 ```
@@ -443,42 +477,45 @@ Implement a function `count_happy` to count how many of the agents are happy.
 Optimize the function by using `jax.vmap` to write a fully vectorised version of `count_happy_vmap_jax` that checks all agents simultaneously and compare the performance.
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
 def count_happy(locations, types, params):
     """
-    Count happy agents using Python loop.
+    Count happy agents using vmap — no Python loop.
     """
-    pass
+    n = params.num_of_type_0 + params.num_of_type_1
+    count = 0
+    for i in range(n):
+        count += ~is_unhappy(locations[i], types[i], i, locations, types, params)
+    return count
 ```
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 %%timeit -n 3
 
 count_happy(locations, types, params)
 ```
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 @partial(jit, static_argnames=('params',))
 def count_happy_vmap_jax(locations, types, params):
     """
     Count happy agents using vmap — no Python loop.
     """
-    pass
+    n = params.num_of_type_0 + params.num_of_type_1
+
+    def agent_is_happy(i):
+        # is_unhappy returns True if unhappy, so negate
+        return ~is_unhappy(locations[i], types[i], i, locations, types, params)
+
+    # Apply agent_is_happy to every index simultaneously
+    happy_mask = vmap(agent_is_happy)(jnp.arange(n))
+    return jnp.sum(happy_mask)
 ```
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 _ = count_happy_vmap_jax(locations, types, params)
 ```
 
 ```{code-cell} ipython3
-:tags: [skip-execution]
-
 %%timeit -n 3
 
 count_happy_vmap_jax(locations, types, params)
