@@ -13,6 +13,10 @@ kernelspec:
 
 # The Schelling Model
 
+*Prepared for SciPy 2026*
+
+**Authors: [John Stachurski](https://johnstachurski.net/), [Thomas J. Sargent](http://www.tomsargent.com/), [Smit Lunagariya](https://smit-create.github.io/intro.html), [Matt McKay](https://github.com/mmcky)**
+
 ## Outline
 
 In 1969, Thomas C. Schelling developed a simple but striking model of racial

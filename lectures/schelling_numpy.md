@@ -13,6 +13,10 @@ kernelspec:
 
 # Schelling Model with NumPy
 
+*Prepared for SciPy 2026*
+
+**Authors: [John Stachurski](https://johnstachurski.net/), [Thomas J. Sargent](http://www.tomsargent.com/), [Smit Lunagariya](https://smit-create.github.io/intro.html), [Matt McKay](https://github.com/mmcky)**
+
 ## Overview
 
 In the [previous lecture](https://quantecon.github.io/scipy_tutorial_2026/schelling.html), we implemented the Schelling

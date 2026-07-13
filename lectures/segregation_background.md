@@ -11,12 +11,16 @@ kernelspec:
   name: python3
 ---
 
-# Racial Segregation 
+# Racial Segregation
+
+*Prepared for SciPy 2026*
+
+**Authors: [John Stachurski](https://johnstachurski.net/), [Thomas J. Sargent](http://www.tomsargent.com/), [Smit Lunagariya](https://smit-create.github.io/intro.html), [Matt McKay](https://github.com/mmcky)**
 
 ## Overview
 
 Residential racial segregation is one of the most persistent features of many
-urban landscapes. 
+urban landscapes.
 
 For example, despite the Civil Rights Act of 1964 and subsequent
 fair housing legislation, American cities remain highly segregated by race.
@@ -27,7 +31,7 @@ cities, setting the stage for our study of the Schelling segregation model.
 ## Visualizing Segregation
 
 The maps below show the racial composition of several major US cities, based on
-census data. 
+census data.
 
 Each dot represents a group of residents.
 
@@ -44,7 +48,7 @@ at the University of Virginia.
 :width: 80%
 
 Racial distribution in Columbus, Ohio. The eastern portion of the city is
-predominantly Black, while the surrounding areas are predominantly White. 
+predominantly Black, while the surrounding areas are predominantly White.
 ```
 
 ### Memphis, Tennessee
@@ -53,7 +57,7 @@ predominantly Black, while the surrounding areas are predominantly White.
 :name: memphis_map
 :width: 80%
 
-Racial distribution in Memphis, Tennessee. 
+Racial distribution in Memphis, Tennessee.
 ```
 
 ### Washington, D.C.
@@ -100,7 +104,7 @@ Racial residential segregation has significant consequences across many dimensio
 
 Because public schools in the United States are typically funded by local
 property taxes and students attend schools near their homes, residential
-segregation leads directly to school segregation. 
+segregation leads directly to school segregation.
 
 Schools in predominantly minority neighborhoods often have:
 
@@ -134,7 +138,7 @@ Residential segregation contributes to racial health disparities through:
 - **Environmental exposure**: Minority neighborhoods are more likely to be
   located near pollution sources, highways, and industrial facilities.
 - **Food access**: Segregated minority neighborhoods often lack full-service
-  grocery stores. 
+  grocery stores.
 - **Healthcare access**: These areas often have fewer healthcare providers and
   longer travel times to hospitals.
 

@@ -13,6 +13,9 @@ kernelspec:
 
 # Schelling Model with JAX - Solution
 
+*Prepared for SciPy 2026*
+
+**Authors: [John Stachurski](https://johnstachurski.net/), [Thomas J. Sargent](http://www.tomsargent.com/), [Smit Lunagariya](https://smit-create.github.io/intro.html), [Matt McKay](https://github.com/mmcky)**
 
 ## Overview
 
