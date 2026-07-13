@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Schelling Model with NumPy
+# Schelling Model with NumPy - Solution
 
 ## Overview
 

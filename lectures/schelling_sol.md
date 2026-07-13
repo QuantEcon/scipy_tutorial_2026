@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# The Schelling Model
+# The Schelling Model - Solution
 
 ## Outline
 

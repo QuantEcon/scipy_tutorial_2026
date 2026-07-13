@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Schelling Model with JAX
+# Schelling Model with JAX - Solution
 
 
 ## Overview

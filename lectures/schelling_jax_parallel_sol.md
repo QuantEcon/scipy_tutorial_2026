@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Parallelizing the Algorithm
+# Parallelizing the Algorithm - Solution
 
 ## Overview
 
