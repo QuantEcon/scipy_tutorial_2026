@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Parallelizing the Algorithm - Solution
+# Vectorizing even further - Solution
 
 *Prepared for SciPy 2026*
 
@@ -26,12 +26,12 @@ In the previous lectures, we implemented the Schelling segregation model using:
 
 NumPy offered speed gains from vectorization.
 
-JAX was slightly faster, with some small amount of parallelization achieved.
+JAX was slightly faster, with some small amount of vectorization achieved.
 
-Parallelization was limited however, because the algorithm is heavily
+Vectorization was limited however, because the algorithm is heavily
 sequential.
 
-In this lecture, we introduce a **parallel algorithm** that
+In this lecture, we introduce a more **vectorized algorithm** that
 
 * is in some sense less elegant but
 * fully leverages JAX's ability to perform vectorized operations across all agents simultaneously.
@@ -39,14 +39,14 @@ In this lecture, we introduce a **parallel algorithm** that
 Even though the algorithm is less elegant, it still converges in a relatively
 small number of steps.
 
-Moreover, the parallel nature of the algorithm allows us to exploit the full
+Moreover, the vectorized nature of the algorithm allows us to exploit the full
 power of JAX.
 
 Our plan for the lecture is to compare three implementations
 
 1. The original NumPy one,
 1. The original JAX one, and
-1. The new parallelized JAX algorithm.
+1. The new vectorized JAX algorithm.
 
 We'll run a "horse race" to see how each approach performs.
 
@@ -288,24 +288,21 @@ def run_jax_simulation(params, max_iter=100_000, seed=42):
     return locations, types
 ```
 
-## JAX Parallel Implementation
+## JAX vectorized Implementation
 
-Now we introduce the parallel algorithm.
+Now we introduce the vectorized algorithm.
 
 Our aim is to update all agents at the same time, rather than sequentially.
 
 To do this we
 
-1. **Identify all unhappy agents** in parallel
-2. **Generate candidate locations** for all unhappy agents in parallel
-3. **Test happiness** at all candidate locations in parallel
+1. **Identify all unhappy agents** in vectorized
+2. **Generate candidate locations** for all unhappy agents in vectorized
+3. **Test happiness** at all candidate locations in vectorized
 4. **Update all agents** simultaneously
 
 Moreover, when we generate candidate locations, we will offer a fixed number to
 all agents.
-
-This allows the parallel threads to do the same amount of work, so they all run
-at the same speed.
 
 This approach is well-suited to GPU execution, where thousands of operations
 can run concurrently.
@@ -315,14 +312,14 @@ can run concurrently.
 The sequential algorithm guarantees that each agent finds a happy location
 before moving on.
 
-The parallel algorithm instead proposes a fixed number of candidate locations
+The vectorized algorithm instead proposes a fixed number of candidate locations
 per agent per iteration.
 
 If none of the candidates make the agent happy, the agent stays put and tries again next iteration.
 
-This means the parallel algorithm may need more iterations.
+This means the vectorized algorithm may need more iterations.
 
-However, each iteration is faster because all work is done in parallel.
+However, each iteration is faster because all work is done in vectorized.
 
 ### Trade-off II
 
@@ -334,14 +331,14 @@ than waiting until other agents update and viewing the true distribution.)
 
 We hope that, nonetheless, the algorithm will converge.
 
-### Core Parallel Functions
+### Core vectorized Functions
 
 The `update_agent_location` function below performs all computation (generating
 candidates, checking happiness at each candidate) upfront before making the
 final decision about whether to move.
 
 This may seem wasteful for agents who are
-already happy, but it's actually optimal for parallel execution.
+already happy, but it's actually optimal for vectorized execution.
 
 In SIMD/SIMT architectures (GPUs, vectorized CPU operations), all threads
 execute the same instructions in lockstep. Conditional branches like
@@ -367,7 +364,7 @@ def update_agent_location(i, locations, types, key, params):
     keys = random.split(key, num_candidates)
     candidates = vmap(lambda k: random.uniform(k, shape=(2,)))(keys)
 
-    # Check happiness at each candidate location (in parallel)
+    # Check happiness at each candidate location (in vectorized)
     def check_candidate(loc):
         return ~jax_is_unhappy(loc, agent_type, i, locations, types, params)
     happy_at_candidates = vmap(check_candidate)(candidates)
@@ -392,11 +389,11 @@ def update_agent_location(i, locations, types, key, params):
 
 
 @partial(jit, static_argnames=('params',))
-def parallel_update_step(locations, types, key, params):
+def vectorized_update_step(locations, types, key, params):
     """
-    One step of the parallel algorithm:
+    One step of the vectorized algorithm:
     1. Generate keys for all agents
-    2. For each agent, find a happy candidate location (in parallel)
+    2. For each agent, find a happy candidate location (in vectorized)
        (happy agents stay put, unhappy agents search for new locations)
     """
     n = params.num_of_type_0 + params.num_of_type_1
@@ -406,7 +403,7 @@ def parallel_update_step(locations, types, key, params):
     key = keys[0]
     agent_keys = keys[1:]
 
-    # For each agent, find a happy candidate location (in parallel)
+    # For each agent, find a happy candidate location (in vectorized)
     def update_one_agent(i):
         return update_agent_location(i, locations, types, agent_keys[i], params)
     new_locations = vmap(update_one_agent)(jnp.arange(n))
@@ -414,10 +411,10 @@ def parallel_update_step(locations, types, key, params):
     return new_locations, key
 ```
 
-### Parallel Simulation Loop
+### vectorized Simulation Loop
 
 ```{code-cell} ipython3
-def parallel_simulation_loop(locations, types, key, params, max_iter):
+def vectorized_simulation_loop(locations, types, key, params, max_iter):
     iteration = 0
     while iteration < max_iter:
         _, num_unhappy = jax_get_unhappy_agents(locations, types, params)
@@ -428,23 +425,23 @@ def parallel_simulation_loop(locations, types, key, params, max_iter):
         print(f'Entering iteration {iteration + 1}')
         iteration += 1
 
-        locations, key = parallel_update_step(locations, types, key, params)
+        locations, key = vectorized_update_step(locations, types, key, params)
 
     return locations, iteration, key
 
 
-def run_parallel_simulation(params, max_iter=100_000, seed=42):
+def run_vectorized_simulation(params, max_iter=100_000, seed=42):
     key = random.key(seed)
     key, init_key = random.split(key)
     locations, types = jax_initialize_state(init_key, params)
 
-    plot_distribution(locations, types, 'JAX Parallel: Initial distribution')
+    plot_distribution(locations, types, 'JAX vectorized: Initial distribution')
 
     start_time = time.time()
-    locations, iteration, key = parallel_simulation_loop(locations, types, key, params, max_iter)
+    locations, iteration, key = vectorized_simulation_loop(locations, types, key, params, max_iter)
     elapsed = time.time() - start_time
 
-    plot_distribution(locations, types, f'JAX Parallel: Iteration {iteration}')
+    plot_distribution(locations, types, f'JAX vectorized: Iteration {iteration}')
 
     if iteration < max_iter:
         print(f'Converged in {elapsed:.2f} seconds after {iteration} iterations.')
@@ -471,11 +468,11 @@ _, _ = jax_get_unhappy_agents(test_locations, test_types, params)
 key, subkey = random.split(key)
 _, _ = jax_update_agent(0, test_locations, test_types, subkey, params)
 
-# Warm up JAX parallel functions
+# Warm up JAX vectorized functions
 key, subkey = random.split(key)
 _ = update_agent_location(0, test_locations, test_types, subkey, params)
 key, subkey = random.split(key)
-_, _ = parallel_update_step(test_locations, test_types, subkey, params)
+_, _ = vectorized_update_step(test_locations, test_types, subkey, params)
 
 print("JAX functions compiled and ready!")
 ```
@@ -502,13 +499,13 @@ print("=" * 50)
 locations_jax, types_jax = run_jax_simulation(params)
 ```
 
-### JAX Parallel
+### JAX vectorized
 
 ```{code-cell} ipython3
 print("=" * 50)
-print("JAX PARALLEL")
+print("JAX vectorized")
 print("=" * 50)
-locations_par, types_par = run_parallel_simulation(params)
+locations_par, types_par = run_vectorized_simulation(params)
 ```
 
 ## Discussion
@@ -521,25 +518,25 @@ The results reveal interesting trade-offs:
 2. **JAX Sequential** uses JIT compilation for individual operations, but the
    outer loop still processes agents one at a time.
 
-3. **JAX Parallel** processes all agents simultaneously each iteration. While
+3. **JAX vectorized** processes all agents simultaneously each iteration. While
    it may require more iterations (since agents might not find a happy location
-   in their limited candidates), each iteration leverages massive parallelism.
+   in their limited candidates), each iteration leverages massive vectorizedism.
 
-The parallel approach shines on GPUs, where thousands of threads can evaluate
+The vectorized approach shines on GPUs, where thousands of threads can evaluate
 candidate locations concurrently. On CPUs, the benefits are more modest, but
-the parallel structure still allows JAX to optimize memory access patterns and
+the vectorized structure still allows JAX to optimize memory access patterns and
 use SIMD instructions effectively.
 
 ## Key Takeaways
 
 1. **Algorithm structure matters**: Simply porting code to JAX doesn't
    automatically make it faster. To fully benefit from JAX's capabilities,
-   algorithms often need to be restructured for parallelism.
+   algorithms often need to be restructured for vectorizedism.
 
-2. **Trade iteration count for parallelism**: The parallel algorithm may need
-   more iterations, but each iteration does more work in parallel. This
-   trade-off often favors parallelism on modern hardware.
+2. **Trade iteration count for vectorizedism**: The vectorized algorithm may need
+   more iterations, but each iteration does more work in vectorized. This
+   trade-off often favors vectorizedism on modern hardware.
 
-3. **GPU acceleration**: The parallel algorithm is particularly well-suited
+3. **GPU acceleration**: The vectorized algorithm is particularly well-suited
    for GPUs, where the speedup can be dramatic. On CPU-only systems, the
    difference is smaller.
